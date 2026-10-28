@@ -1,0 +1,34 @@
+{
+  "name": "@local/dsh-turn-notify",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Harness 完成一轮对话、或卡住等你确认时，在 Windows 右下角弹出一张跟随当前主题的提示卡片，并播放系统通知音。",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "notify.ps1",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  }
+}

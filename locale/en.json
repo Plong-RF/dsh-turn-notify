@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Turn Notify",
+    "description": "Shows a theme-following Windows toast in the bottom-right corner when a turn finishes or the agent waits for your approval, with the system notification sound."
+  }
+}

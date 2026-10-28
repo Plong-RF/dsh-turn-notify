@@ -1,0 +1,22 @@
+# dsh-turn-notify —— 对话完成提醒
+#
+# 插入一行宿主插件；配置项写在这里，改完重载后生效。
+- insert:
+    - id: turn-notify
+      name: '@local/dsh-turn-notify'
+      config:
+        enabled: true
+        # 回合短于这个秒数就不弹（0 = 每轮都弹）
+        minTurnSeconds: 30
+        # 完成卡片停留秒数
+        seconds: 8
+        # 等待确认卡片停留秒数（到时直接消失）
+        waitingSeconds: 20
+        # 是否播放系统通知音
+        sound: true
+        # 你正看着这条会话时不弹
+        skipWhenFocused: true
+        # 最多同时叠几张
+        maxStack: 3
+        # 卡片宽度（高度按内容自适应）
+        width: 340
