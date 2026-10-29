@@ -247,7 +247,8 @@ export function apply(ctx, rawConfig = {}) {
       title: clip(title, 60),
       body: snippet ? clip(snippet, 120) : '这一轮已经结束，回到 Harness 查看结果。',
       meta: metaParts.join(' · '),
-      accent: theme[info.tone] ?? theme.success,
+      // 完成卡的色条跟标题同色（主题强调色），等待/出错保留状态色。
+      accent: info.tone === 'success' ? theme.title ?? theme.success : theme[info.tone] ?? theme.success,
       seconds: Number(opts.seconds) || 8,
       theme,
     })

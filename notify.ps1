@@ -77,9 +77,9 @@ $metaColor = Get-Color (Get-Prop $colors 'meta' '#86868F') '#86868F'
 $accentColor = Get-Color $accent '#4ADE80'
 
 $fontSize = [Math]::Max(11, [Math]::Min(18, $fontSize))
-$titlePt = [float]([Math]::Max(8.5, [Math]::Round($fontSize - 4.25, 1)))
-$bodyPt = [float]([Math]::Max(8, [Math]::Round($fontSize - 5, 1)))
-$metaPt = [float]([Math]::Max(7.5, [Math]::Round($fontSize - 5.75, 1)))
+$titlePt = [float]([Math]::Max(9.5, [Math]::Round($fontSize - 3.25, 1)))
+$bodyPt = [float]([Math]::Max(9, [Math]::Round($fontSize - 4, 1)))
+$metaPt = [float]([Math]::Max(8, [Math]::Round($fontSize - 5.25, 1)))
 
 try {
   $titleFont = New-Object System.Drawing.Font($fontFamily, $titlePt, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Point)
@@ -94,11 +94,11 @@ try {
 
 $padLeft = 19
 $padRight = 14
-$padTop = 10
-$padBottom = 10
-$gap = 4
+$padTop = 12
+$padBottom = 12
+$gap = 5
 $textWidth = $width - $padLeft - $padRight
-$maxBodyLines = 4
+$maxBodyLines = 5
 
 $measure = New-Object System.Drawing.Bitmap 8, 8
 $mg = [System.Drawing.Graphics]::FromImage($measure)
@@ -132,7 +132,7 @@ $measure.Dispose()
 $height = [int][Math]::Ceiling($padTop + $titleHeight + $gap + $bodyHeight + $gap + $metaHeight + $padBottom)
 
 # ---- render the card once, supersampled ---------------------------------
-$S = 2.0
+$S = 1.0
 $cardBmp = New-Object System.Drawing.Bitmap ([int]($width * $S)), ([int]($height * $S)), ([System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
 $cardBmp.SetResolution(96, 96)
 $cg = [System.Drawing.Graphics]::FromImage($cardBmp)
@@ -239,7 +239,7 @@ function Render-Frame([double]$shiftX, [double]$shiftY, [double]$alpha) {
 
   # DrawImage has no (Image, RectangleF dest, Rectangle src, GraphicsUnit,
   # ImageAttributes) overload: PowerShell then picks the Point[] parallelogram
-  # overload and dies converting the RectangleF. Keep one valid shape only —
+  # overload and dies converting the RectangleF. Keep one valid shape only -
   # integral destination, source = the whole supersampled card.
   $destRect = New-Object System.Drawing.Rectangle ([int]$x), ([int]$y), ([int]$width), ([int]$height)
   # Scale all four channels: the frame is premultiplied PArgb, so fading only
