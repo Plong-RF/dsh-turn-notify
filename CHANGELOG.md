@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v1.0.1 — 2026-10-29
+
+修复：Harness 重启后卡片不跟随主题。
+
+- 根因：插件加载时用 `ctx.get('webServer')` 一次性探测，该实例里 webServer 尚未就绪，路由注册被静默跳过；插件 `fiberPhase` 仍是 `active`，从表面看不出来
+- 改为 `ctx.inject(['webServer'], ...)`：等 webServer 就绪后再注册 `/turn-notify/state`
+- 客户端不再只依赖 `theme/change` 事件：每 2 秒比对一次主题色值，变化即上报（部分主题切换不触发该事件）
+- 新增诊断能力：`GET /turn-notify/state?probe=1` 返回宿主当前缓存，`%TEMP%\dsh-turn-notify-state.json` 每次上报落盘
+- 验证：probe 返回真实主题色（`card:#434f55 / title:#e19d80`，Everforest dark），`GET` 恢复 405
+
 ## v1.0 — 2026-10-28
 
 首次发布。

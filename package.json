@@ -1,6 +1,6 @@
 {
   "name": "@local/dsh-turn-notify",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Harness 完成一轮对话、或卡住等你确认时，在 Windows 右下角弹出一张跟随当前主题的提示卡片，并播放系统通知音。",
   "type": "module",

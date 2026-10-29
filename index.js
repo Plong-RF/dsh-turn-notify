@@ -10,7 +10,8 @@
  * 不写会话日志、不进模型上下文。
  */
 import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -62,6 +63,7 @@ const FALLBACK_THEME = {
 }
 
 const STACK_STEP = 96
+const STATE_PROBE = join(tmpdir(), 'dsh-turn-notify-state.json')
 
 export function apply(ctx, rawConfig = {}) {
   const opts = { ...DEFAULTS, ...rawConfig }
@@ -86,22 +88,17 @@ export function apply(ctx, rawConfig = {}) {
   let lastSoundAt = 0
 
   // ---- 浏览器 → 宿主 的状态通道 ---------------------------------------
-  let webServer = null
-  try {
-    webServer = ctx.get('webServer') ?? null
-  } catch {
-    webServer = null
-  }
-
-  if (webServer && typeof webServer.register === 'function') {
-    ctx.effect(() =>
-      webServer.register({
+  // The webserver is an optional peer: wait for it instead of probing once at
+  // load time, otherwise a later-booted server leaves the route unregistered.
+  ctx.inject(['webServer'], (scope) => {
+    scope.effect(() =>
+      scope.webServer.register({
         kind: 'exact',
         path: '/turn-notify/state',
         handler: handleStateRequest,
       }),
     )
-  }
+  })
 
   function handleStateRequest(req, res) {
     const reply = (code) => {
@@ -110,7 +107,17 @@ export function apply(ctx, rawConfig = {}) {
         res.end()
       } catch {}
     }
-    if (req.method !== 'POST') return reply(405)
+    if (req.method !== 'POST') {
+      if (req.method === 'GET' && String(req.url ?? '').includes('probe')) {
+        try {
+          res.statusCode = 200
+          res.setHeader('content-type', 'application/json')
+          res.end(JSON.stringify({ at: Date.now(), ...state }))
+        } catch {}
+        return
+      }
+      return reply(405)
+    }
     const chunks = []
     let size = 0
     req.on('data', (chunk) => {
@@ -134,6 +141,9 @@ export function apply(ctx, rawConfig = {}) {
             state.visibleSessionId = typeof body.sessionId === 'string' ? body.sessionId : null
           }
         }
+      } catch {}
+      try {
+        writeFileSync(STATE_PROBE, JSON.stringify({ at: Date.now(), ...state }), 'utf8')
       } catch {}
       reply(204)
     })

@@ -149,10 +149,22 @@ window.__ModuleLoader__.load({
     return {
       inject: ['theme', 'slots'],
       apply(ctx) {
-        const sendTheme = () => post({ type: 'state', ...themeSnapshot(ctx), focused: document.hasFocus() })
+        let lastSignature = ''
+        const sendTheme = () => {
+          const snapshot = themeSnapshot(ctx)
+          const signature = JSON.stringify(snapshot)
+          if (signature === lastSignature) return
+          lastSignature = signature
+          post({ type: 'state', ...snapshot, focused: document.hasFocus() })
+        }
         sendTheme()
 
         ctx.effect(() => ctx.on('theme/change', sendTheme))
+
+        // Belt and braces: some theme switches do not surface as theme/change
+        // (e.g. a plugin re-registering the active theme). Poll cheaply.
+        const poll = setInterval(sendTheme, 2000)
+        ctx.effect(() => () => clearInterval(poll))
 
         const onFocus = () => post({ type: 'focus', focused: true })
         const onBlur = () => post({ type: 'focus', focused: false })
