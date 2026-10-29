@@ -105,6 +105,23 @@ window.__ModuleLoader__.load({
         .join('')}`
     }
 
+    function luminance(hex) {
+      const color = parseColor(hex)
+      if (!color) return 0.5
+      const channel = (value) => {
+        const s = value / 255
+        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)
+      }
+      return 0.2126 * channel(color.r) + 0.7152 * channel(color.g) + 0.0722 * channel(color.b)
+    }
+
+    // Keep the title readable when a theme's accent happens to sit close to its
+    // card background: push it away from the background instead of dropping it.
+    function ensureReadable(color, backdrop) {
+      if (Math.abs(luminance(color) - luminance(backdrop)) >= 0.18) return color
+      return luminance(backdrop) > 0.5 ? mixHex(color, '#000000', 0.55) : mixHex(color, '#ffffff', 0.55)
+    }
+
     function themeSnapshot(ctx) {
       let snapshot = null
       try {
@@ -117,16 +134,18 @@ window.__ModuleLoader__.load({
       const success = solid(token('--dsw-alias-state-success-primary'), '#4ade80')
       const warn = solid(token('--dsw-alias-state-warn-primary'), '#fbbf24')
       const error = solid(token('--dsw-alias-state-error-primary'), '#f87171')
+      const brand = solid(token('--dsw-alias-brand-primary'), '')
 
       return {
         theme: {
           card,
           border: solid(token('--dsw-alias-border-l1'), card),
-          // 标题用主题的红 + 黄混出来的橘红，正文用主题自己的主文字色（鹅黄），
-          // 脚注才降到次级灰 —— 弹窗上不出现"大段低对比文字"。
-          title: mixHex(error, warn, 0.5),
+          // 标题取主题自己的强调色（brand-primary）——换主题它就换，
+          // 不再固定成"红+黄"混出的橘色。强调色若与底色太接近，则压深/提亮。
+          title: ensureReadable(brand || mixHex(error, warn, 0.5), card),
           body: primary,
           meta: secondary,
+          brand,
           success,
           warn,
           error,
