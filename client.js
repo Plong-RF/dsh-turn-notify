@@ -122,6 +122,18 @@ window.__ModuleLoader__.load({
       return luminance(backdrop) > 0.5 ? mixHex(color, '#000000', 0.55) : mixHex(color, '#ffffff', 0.55)
     }
 
+    // A token can be a "brand" value that is really a neutral fill (the official
+    // theme uses near-black for primary buttons). Only accept a candidate that
+    // actually carries a hue, otherwise the title would be indistinguishable
+    // from the body text.
+    function isColorful(value) {
+      const color = parseColor(value)
+      if (!color) return false
+      const max = Math.max(color.r, color.g, color.b)
+      const min = Math.min(color.r, color.g, color.b)
+      return max - min >= 24
+    }
+
     function themeSnapshot(ctx) {
       let snapshot = null
       try {
@@ -135,6 +147,8 @@ window.__ModuleLoader__.load({
       const warn = solid(token('--dsw-alias-state-warn-primary'), '#fbbf24')
       const error = solid(token('--dsw-alias-state-error-primary'), '#f87171')
       const brand = solid(token('--dsw-alias-brand-primary'), '')
+      const business = solid(token('--dsw-alias-state-business-primary'), '')
+      const link = solid(token('--dsw-alias-link'), '')
 
       return {
         theme: {
@@ -142,10 +156,15 @@ window.__ModuleLoader__.load({
           border: solid(token('--dsw-alias-border-l1'), card),
           // 标题取主题自己的强调色（brand-primary）——换主题它就换，
           // 不再固定成"红+黄"混出的橘色。强调色若与底色太接近，则压深/提亮。
-          title: ensureReadable(brand || mixHex(error, warn, 0.5), card),
+          title: ensureReadable(
+            [brand, business, link].find((candidate) => isColorful(candidate)) || mixHex(error, warn, 0.5),
+            card,
+          ),
           body: primary,
           meta: secondary,
           brand,
+          business,
+          link,
           success,
           warn,
           error,

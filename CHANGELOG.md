@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v1.0.3 — 2026-10-29
+
+标题取色再修正：官方主题的 `brand-primary` 是**近黑的按钮填充色**，不是强调色，导致标题和正文都变成 `#0f1115`。
+
+- 改为按 `brand-primary` → `state-business-primary` → `link` 的顺序，取**第一个真正带色相**的值（RGB 三通道极差 ≥ 24）
+- Everforest：`brand-primary` 是青绿，直接用
+- 官方主题：`brand-primary` 近黑被跳过，落到有颜色的候选上
+- 三个候选值都写进快照，方便核对
 ## v1.0.2 — 2026-10-29
 
 标题颜色改为跟随主题的**强调色**（`--dsw-alias-brand-primary`），不再固定成"红 + 黄"混出来的橘色。
