@@ -339,6 +339,19 @@ $hold.Add_Tick({
   $anim.Start()
 })
 
+# Safety net: if the fade-in timer ever stalls, snap to fully visible so the
+# card can never end up "window exists but nothing is drawn".
+$safety = New-Object System.Windows.Forms.Timer
+$safety.Interval = 600
+$safety.Add_Tick({
+  $safety.Stop()
+  if ($script:closing) { return }
+  if ($script:alpha -lt 0.95) {
+    $script:alpha = $script:alphaTarget
+    if (-not $form.IsDisposed) { Show-Frame 0 ($script:shift + $script:hoverLift) $script:alpha }
+  }
+})
+
 $keep = New-Object System.Windows.Forms.Timer
 $keep.Interval = 700
 $keep.Add_Tick({
@@ -382,6 +395,7 @@ $form.Add_Shown({
   }
   Show-Frame 0 ($script:shift + $script:hoverLift) $script:alpha
   $anim.Start()
+  $safety.Start()
   $hold.Start()
   try {
     if ($previousForeground -ne [IntPtr]::Zero -and [ToastNative]::GetForegroundWindow() -eq $form.Handle) {
